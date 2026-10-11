@@ -1,1 +1,470 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Türkçe Adam Asmaca</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* GENEL SAYFA AYARLARI */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            margin: 0;
+            box-sizing: border-box;
+        }
 
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+
+        /* OYUN KARTI (ANA ÇERÇEVE) */
+        .oyun-karti {
+            width: 100%;
+            max-width: 32rem;
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .oyun-karti {
+                padding: 2rem;
+            }
+        }
+
+        /* İÇ PANELLER VE KUTULAR */
+        .panel {
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 1rem;
+        }
+
+        .panel-skor {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+        }
+
+        .panel-cizim {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .panel-kelime {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        /* ETİKETLER VE METİNLER */
+        .etiket-baslik {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .deger-puan {
+            color: #34d399;
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+
+        .deger-seri {
+            color: #fb923c;
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+
+        .ana-baslik {
+            font-size: 1rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #818cf8, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text; /* Standart özellik eklendi */
+            margin: 0;
+        }
+
+        .kelime-gosterge {
+            font-size: 2rem;
+            font-family: monospace;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            color: #fbbf24;
+        }
+
+        .durum-metin {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+            margin-bottom: 0;
+        }
+
+        /* SANAL KLAVYE */
+        .klavye-izgara {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 0.5rem;
+        }
+
+        .harf-butonu {
+            background-color: #334155;
+            color: #f8fafc;
+            font-weight: 700;
+            font-size: 0.875rem;
+            padding: 0.625rem 0;
+            border-radius: 0.75rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: none;
+            cursor: pointer;
+        }
+
+        .harf-butonu:hover:not(:disabled) {
+            background-color: #4f46e5;
+            transform: scale(0.97);
+        }
+
+        .harf-butonu:disabled {
+            background-color: #1e293b;
+            color: #475569;
+            border: 1px solid #334155;
+            cursor: not-allowed;
+        }
+
+        /* ALT AKSİYON BUTONLARI */
+        .aksiyon-kapsayici {
+            display: flex;
+            gap: 0.75rem;
+            padding-top: 0.5rem;
+        }
+
+        .aksiyon-butonu {
+            flex: 1;
+            font-weight: 600;
+            font-size: 0.875rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .aksiyon-butonu:active {
+            transform: scale(0.95);
+        }
+
+        .btn-ipucu {
+            background-color: #9333ea;
+        }
+
+        .btn-ipucu:hover {
+            background-color: #7e22ce;
+        }
+
+        .btn-ipucu-badge {
+            font-size: 0.75rem;
+            background-color: rgba(88, 28, 135, 0.6);
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.375rem;
+            color: #e9d5ff;
+        }
+
+        .btn-yenigun {
+            background: linear-gradient(to right, #ea580c, #d97706);
+        }
+
+        .btn-yenigun:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ana Konteyner -->
+    <div class="oyun-karti">
+        
+        <!-- ÜST SKOR VE SERİ PANELİ -->
+        <div class="panel panel-skor">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="etiket-baslik">Puan:</span>
+                <span id="puan-label" class="deger-puan">0</span>
+            </div>
+            <h1 class="ana-baslik">🎮 ADAM ASMACA</h1>
+            <div style="display: flex; align-items: center; gap: 0.25rem;">
+                <span class="etiket-baslik">Seri:</span>
+                <span id="seri-label" class="deger-seri">🔥 0</span>
+            </div>
+        </div>
+
+        <!-- CANVAS VE DURUM -->
+        <div class="panel panel-cizim">
+            <canvas id="hangman-canvas" width="200" height="150" style="border-radius: 0.75rem;"></canvas>
+            <p id="durum-label" class="durum-metin">
+                Kalan Hak: <span id="hak-sayac" style="color: white; font-weight: 700;">6</span>
+            </p>
+        </div>
+
+        <!-- KELİME GÖSTERGESİ -->
+        <div class="panel panel-kelime">
+            <div id="kelime-label" class="kelime-gosterge">_ _ _ _</div>
+        </div>
+
+        <!-- HARF BUTONLARI (SANAL KLAVYE) -->
+        <div id="klavye-grid" class="klavye-izgara">
+            <!-- JavaScript ile doldurulacak -->
+        </div>
+
+        <!-- ALT KONTROL BUTONLARI -->
+        <div class="aksiyon-kapsayici">
+            <button onclick="ipucuVer()" class="aksiyon-butonu btn-ipucu">
+                💡 İpucu Al <span class="btn-ipucu-badge">(-1 Hak)</span>
+            </button>
+            <button onclick="yeniOyunKur()" class="aksiyon-butonu btn-yenigun">
+                🔄 Yeni Oyun
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        const kelimeler = [
+            "ADA", "ÇAY", "DAĞ", "DERE", "GÖL", "KAR", "KUM", "TAŞ", "VADİ", "YOL",
+            "AKIL", "BALIK", "BİBER", "BULUT", "ÇAYIR", "DOLU", "DOSYA", "EKRAN",
+            "ELMA", "HAVA", "KAPI", "KEDİ", "MASA", "MUZ", "RUH", "SAAT",
+            "ŞANS", "TAVUK", "UYDU", "ÖLÜM", "BARDAK", "TABAK",
+            "ARMUT", "AYRAN", "AZİM", "ÇORAP", "ÇORBA", "DENİZ", "DOLAP", "FIRÇA",
+            "GÜNEŞ", "GÜVEN", "GURUR", "HALI", "HAYAT", "KADER", "KALEM", "KAVUN",
+            "KİTAP", "KORKU", "LAMBA", "MEYVE", "NEHİR", "PERDE", "PİKSEL", "ROBOT",
+            "SABUN", "SEBZE", "SEVGİ", "ŞİFRE", "TARAK", "TOPRAK", "TREN", "UMUT",
+            "UZAY", "YATAK", "ZAMAN",
+            "ADALET", "ANALİZ", "ARABA", "BELLEK", "BİLGİ", "ÇEKMECE",
+            "ÇİÇEK", "ÇİLEK", "DEPREM", "DOST", "DOSTLUK", "ENERJİ",
+            "FİZİK", "GALAKSİ", "GEZEGEN", "HAVLU", "HÜZÜN", "KAHVE",
+            "KARPUZ", "KİMYA", "KLASÖR", "KLAVYE", "MAVİ", "MANTIK",
+            "MERAK", "MİMARİ", "ORMAN", "ÖZGÜRLÜK", "PATATES", "PEYNİR",
+            "PİRİNÇ", "SADAKAT", "SALATA", "SARIMSAK", "ŞELALE", "ŞİMŞEK",
+            "SİNYAL", "SOĞAN", "VOLKAN", "YAĞMUR", "YAPRAK", "YILDIZ", "ZEYTİN",
+            "BAŞARI", "BİYOLOJİ", "ÇİKOLATA", "DONANIM", "FIRTINA", "İNOVASYON",
+            "İŞLEMCİ", "KÜTÜPHANE", "LİMONATA", "MAKARNA", "MATEMATİK", "MUTLULUK",
+            "PENCERE", "PİYANO", "RÜZGAR", "SABIR", "ŞEMSİYE", "TEKNOLOJİ",
+            "UÇAK", "YAZILIM",
+            "ALGORİTMA", "BİSİKLET", "DOMATES", "DÜŞÜNCE", "GEMİ", "GÖKKUŞAĞI",
+            "GÜVENLİK", "HEYECAN", "İLETİŞİM", "İNTERNET", "KAVUN", "KELİME",
+            "LAHMACUN", "LİMON", "MENEMEN", "MERDİVEN", "MOTOSİKLET", "MÜHENDİSLİK",
+            "OTOBÜS", "PORTAKAL", "PROGRAMLAMA", "SANDALYE", "TELEFON", "TELEVİZYON",
+            "VERİ", "VERİTABANI", "BİLGİSAYAR", "LABORATUVAR", "SALATALIK"
+        ];
+
+        let oyunState = {
+            toplamPuan: 0,
+            galibiyetSerisi: 0,
+            secilenKelime: "",
+            kalanHak: 6,
+            tahminDurumu: [],
+            denenenHarfler: new Set(),
+            sonCikanlar: []
+        };
+
+        const alfabe = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ";
+
+        window.onload = function() {
+            klavyeOlustur();
+            yeniOyunKur();
+
+            window.addEventListener('keydown', (e) => {
+                let harf = e.key.replace("i", "İ").replace("ı", "I").replace("ş", "Ş").replace("ğ", "Ğ").replace("ü", "Ü").replace("ö", "Ö").replace("ç", "Ç").toUpperCase();
+                if(alfabe.includes(harf)) {
+                    harfTahminEt(harf);
+                }
+            });
+        };
+
+        function klavyeOlustur() {
+            const container = document.getElementById('klavye-grid');
+            container.innerHTML = '';
+            alfabe.split('').forEach(harf => {
+                const btn = document.createElement('button');
+                btn.id = `btn-${harf}`;
+                btn.innerText = harf;
+                btn.className = "harf-butonu";
+                btn.onclick = () => harfTahminEt(harf);
+                container.appendChild(btn);
+            });
+        }
+
+        function yeniOyunKur() {
+            let musaitKelimeler = kelimeler.filter(k => !oyunState.sonCikanlar.includes(k));
+            if(musaitKelimeler.length === 0) {
+                oyunState.sonCikanlar = [];
+                musaitKelimeler = kelimeler;
+            }
+
+            oyunState.secilenKelime = musaitKelimeler[Math.floor(Math.random() * musaitKelimeler.length)];
+            oyunState.sonCikanlar.push(oyunState.secilenKelime);
+            if(oyunState.sonCikanlar.length > 25) oyunState.sonCikanlar.shift();
+
+            oyunState.kalanHak = 6;
+            oyunState.tahminDurumu = Array(oyunState.secilenKelime.length).fill("_");
+            oyunState.denenenHarfler.clear();
+
+            alfabe.split('').forEach(harf => {
+                const btn = document.getElementById(`btn-${harf}`);
+                if(btn) btn.disabled = false;
+            });
+
+            ekraniGuncelle();
+            daragaciCiz();
+        }
+
+        function ekraniGuncelle() {
+            document.getElementById('kelime-label').innerText = oyunState.tahminDurumu.join(' ');
+            document.getElementById('hak-sayac').innerText = oyunState.kalanHak;
+            document.getElementById('puan-label').innerText = oyunState.toplamPuan;
+            document.getElementById('seri-label').innerText = `🔥 ${oyunState.galibiyetSerisi}`;
+        }
+
+        function daragaciCiz() {
+            const canvas = document.getElementById('hangman-canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#64748b";
+
+            // Direk
+            ctx.beginPath();
+            ctx.moveTo(30, 135); ctx.lineTo(150, 135);
+            ctx.moveTo(60, 135); ctx.lineTo(60, 15);
+            ctx.moveTo(60, 15);  ctx.lineTo(120, 15);
+            ctx.moveTo(120, 15); ctx.lineTo(120, 35);
+            ctx.stroke();
+
+            // Adam parçaları
+            ctx.strokeStyle = "#f43f5e";
+            ctx.lineWidth = 3;
+
+            let hak = oyunState.kalanHak;
+            if(hak <= 5) { ctx.beginPath(); ctx.arc(120, 50, 15, 0, Math.PI * 2); ctx.stroke(); }
+            if(hak <= 4) { ctx.beginPath(); ctx.moveTo(120, 65); ctx.lineTo(120, 100); ctx.stroke(); }
+            if(hak <= 3) { ctx.beginPath(); ctx.moveTo(120, 75); ctx.lineTo(100, 90); ctx.stroke(); }
+            if(hak <= 2) { ctx.beginPath(); ctx.moveTo(120, 75); ctx.lineTo(140, 90); ctx.stroke(); }
+            if(hak <= 1) { ctx.beginPath(); ctx.moveTo(120, 100); ctx.lineTo(100, 125); ctx.stroke(); }
+            if(hak === 0) { ctx.beginPath(); ctx.moveTo(120, 100); ctx.lineTo(140, 125); ctx.stroke(); }
+        }
+
+        function harfTahminEt(harf) {
+            if(oyunState.denenenHarfler.has(harf) || oyunState.kalanHak <= 0) return;
+            oyunState.denenenHarfler.add(harf);
+
+            const btn = document.getElementById(`btn-${harf}`);
+            if(btn) btn.disabled = true;
+
+            if(oyunState.secilenKelime.includes(harf)) {
+                for(let i = 0; i < oyunState.secilenKelime.length; i++) {
+                    if(oyunState.secilenKelime[i] === harf) {
+                        oyunState.tahminDurumu[i] = harf;
+                    }
+                }
+                ekraniGuncelle();
+
+                if(!oyunState.tahminDurumu.includes("_")) {
+                    let kazanc = oyunState.kalanHak * 10 + oyunState.secilenKelime.length * 5;
+                    oyunState.toplamPuan += kazanc;
+                    oyunState.galibiyetSerisi++;
+                    ekraniGuncelle();
+                    setTimeout(() => {
+                        alert(`🎉 Tebrikler! Kazandınız!\nKelime: ${oyunState.secilenKelime}\nKazanılan Puan: ${kazanc}`);
+                        yeniOyunKur();
+                    }, 100);
+                }
+            } else {
+                oyunState.kalanHak--;
+                ekraniGuncelle();
+                daragaciCiz();
+
+                if(oyunState.kalanHak === 0) {
+                    oyunState.galibiyetSerisi = 0;
+                    ekraniGuncelle();
+                    setTimeout(() => {
+                        alert(`❌ Oyun Bitti!\nDoğru Kelime: ${oyunState.secilenKelime}`);
+                        yeniOyunKur();
+                    }, 100);
+                }
+            }
+        }
+
+        function ipucuVer() {
+            let gizliIndeksler = [];
+            oyunState.tahminDurumu.forEach((val, idx) => {
+                if(val === "_") gizliIndeksler.push(idx);
+            });
+
+            if(gizliIndeksler.length === 0) return;
+
+            if(oyunState.kalanHak <= 1) {
+                alert("Uyarı: İpucu almak için yeterli hakkınız kalmadı!");
+                return;
+            }
+
+            let secilenIdx = gizliIndeksler[Math.floor(Math.random() * gizliIndeksler.length)];
+            let harf = oyunState.secilenKelime[secilenIdx];
+
+            for(let i = 0; i < oyunState.secilenKelime.length; i++) {
+                if(oyunState.secilenKelime[i] === harf) {
+                    oyunState.tahminDurumu[i] = harf;
+                }
+            }
+            oyunState.denenenHarfler.add(harf);
+            const btn = document.getElementById(`btn-${harf}`);
+            if(btn) btn.disabled = true;
+
+            oyunState.kalanHak--;
+            ekraniGuncelle();
+            daragaciCiz();
+
+            if(oyunState.kalanHak === 0) {
+                oyunState.galibiyetSerisi = 0;
+                ekraniGuncelle();
+                setTimeout(() => {
+                    alert(`Oyun Bitti! İpucu kullanırken hakkınız tükendi!\nDoğru Kelime: ${oyunState.secilenKelime}`);
+                    yeniOyunKur();
+                }, 100);
+            } else if(!oyunState.tahminDurumu.includes("_")) {
+                let kazanc = (oyunState.kalanHak + 1) * 10 + oyunState.secilenKelime.length * 5;
+                oyunState.toplamPuan += kazanc;
+                oyunState.galibiyetSerisi++;
+                ekraniGuncelle();
+                setTimeout(() => {
+                    alert(`🎉 Tebrikler! Kazandınız!\nKelime: ${oyunState.secilenKelime}\nKazanılan Puan: ${kazanc}`);
+                    yeniOyunKur();
+                }, 100);
+            }
+        }
+    </script>
+</body>
+</html>
